@@ -31,12 +31,14 @@ function get_context_for_llm()
     proj = Pkg.project()
     repl_history = Base.active_repl.mistate.current_mode.hist.history
 
+    # trim to the most recent 10 entries
     if length(repl_history) > 10
         repl_history = repl_history[end-10:end]
     end
 
+    # the code that caused the error would have been the second last entry in the history - the last is the al/aicopy command
     llm_context = """
-        I'm using the Tidier packages in julia and I encountered an error.
+        I'm using julia and I encountered an error.
 
         I'm using the following packages: $(keys(proj.dependencies)).
 
@@ -45,7 +47,7 @@ function get_context_for_llm()
         I currently have the following objects in my workspace:
         $(names(Main))
 
-        The error I got when I ran the code: $(repl_history[end-1]) was:
+        The error I got when I ran the code: '$(repl_history[end-1])' was:
     """
 
     request = """
