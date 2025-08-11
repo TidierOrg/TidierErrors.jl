@@ -5,10 +5,12 @@ module TidierErrors
 using AbbreviatedStackTraces
 using PromptingTools
 using Pkg
+using Preferences
 using InteractiveUtils: clipboard
+using REPL.TerminalMenus
 import REPL
 
-export aicopy
+export aicopy, ai, aisetup
 
 function REPL.repl_display_error(errio::IO, @nospecialize errval)
     # this will be set to true if types in the stacktrace are truncated
@@ -70,6 +72,46 @@ end
 
 function ai(err)
     llm_context, request = get_context_for_llm()
-    aigenerate(llm_context * string(err) * request)
+    msg = aigenerate(get_schema(), llm_context * string(err) * request; model = get_model())
+    return msg
+end
+
+function aisetup()
+    schema = "openai"
+    provider = request("Which LLM Provider would you like to use?", RadioMenu(["OpenAI", "Ollama"]))
+    if provider == 1
+        println("Enter your OpenAI API key:")
+        api_key = readline()
+        model = nothing
+        PromptingTools.OPENAI_API_KEY = api_key
+        @info "You can set the environment variable OPENAI_API_KEY to avoid entering it every time."
+    elseif provider == 2
+        schema = "ollama"
+        api_key = nothing
+        println("Enter the name of the Ollama model:")
+        model = readline()
+    end
+
+    @set_preferences!(
+        "tidiererrors_llm_schema" => schema,
+        "tidiererrors_llm_api_key" => api_key,
+        "tidiererrors_llm_model" => model)
+
+    return nothing
+end
+
+function get_schema()
+    schema = @load_preference("tidiererrors_llm_schema")
+    return schema == "openai" ? PromptingTools.OpenAISchema() : PromptingTools.OllamaSchema()
+end
+
+function get_api_key()
+    api_key = @load_preference("tidiererrors_llm_api_key")
+    return api_key
+end
+
+function get_model()
+    model = @load_preference("tidiererrors_llm_model")
+    return model
 end
 end
