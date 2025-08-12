@@ -40,23 +40,14 @@ Enter the name of the Ollama model:
 gpt-oss:20B
  ```
 
-## Comparing Error Messages
-<table>
-  <thead>
-    <tr>
-      <th>With TidierErrors</th>
-      <th>Full Stacktrace</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td valign="top" width="50%">
-<pre><code class="language-julia">julia> using TidierErrors
+## Example
+Heres a quick demonstration
+```julia
+julia> using TidierErrors
 
 julia> sum([])
 ERROR: MethodError: no method matching zero(::Type{Any})
-This error has been manually thrown, explicitly, so the 
-method may exist but be intentionally marked as unimplemented.
+This error has been manually thrown, explicitly, so the method may exist but be intentionally marked as unimplemented.
 
 Closest candidates are:
   zero(::Type{Union{Missing, T}}) where T
@@ -71,13 +62,16 @@ Stacktrace:
       ⋮ internal @ Base, Unknown
  [13] sum(a::Vector{Any})
     @ Base ./reducedim.jl:982
-Some frames were hidden. Use `show(err)` to see complete trace.</code></pre>
-      </td>
-      <td valign="top" width="50%">
+Some frames were hidden. Use `show(err)` to see complete trace.
+```
+
+
+<details>
+  <summary><strong>Versus the full stacktrace </strong></summary>
+
 <pre><code class="language-julia">julia> sum([])
 ERROR: MethodError: no method matching zero(::Type{Any})
-This error has been manually thrown, explicitly, so the 
-method may exist but be intentionally marked as unimplemented.
+This error has been manually thrown, explicitly, so the method may exist but be intentionally marked as unimplemented.
 
 Closest candidates are:
   zero(::Type{Union{Missing, T}}) where T
@@ -117,11 +111,9 @@ Stacktrace:
     @ Base ./reducedim.jl:982
  [14] top-level scope
     @ REPL[1]:1</code></pre>
+</details>
 
-  </tbody>
-</table>
-
-## Using `ai(err)` and a local LLM to troubleshoot
+## Using `ai(err`) and a local LLM to trouble shoot
 ```julia
 julia> ai(err)
 [ Info: Tokens: 1983 in 37.6 seconds
