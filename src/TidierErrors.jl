@@ -3,12 +3,14 @@ __precompile__(false)
 module TidierErrors
 
 using AbbreviatedStackTraces
-import Base: RefValue, devnull
+using Markdown
 using PromptingTools
 using Pkg
 using Preferences
 using InteractiveUtils: clipboard
 using REPL.TerminalMenus
+
+import Base: RefValue, devnull
 import REPL
 
 export aicopy, ai, aisetup, errordisplaysetup
@@ -102,7 +104,8 @@ function REPL.repl_display_error(errio::IO, @nospecialize errval)
     if action == "Copy to error with context to clipboard"
         aicopy(errval)
     elseif action == "Send error to LLM"
-        ai(errval)
+        msg = ai(errval)
+        show(stdout, "text/markdown", msg)
     end
 
     return nothing
@@ -151,8 +154,13 @@ end
 
 function ai(err)
     llm_context, request = get_context_for_llm()
-    msg = aigenerate(get_schema(), llm_context * string(err) * request; model=get_model(), streamcallback = stdout)
-    return msg
+    if get_stream_pref() == "Yes"
+        aigenerate(get_schema(), llm_context * string(err) * request; model=get_model(), streamcallback=stdout)
+        return nothing
+    else
+        msg = aigenerate(get_schema(), llm_context * string(err) * request; model=get_model())
+        return Markdown.parse(msg.content)
+    end
 end
 
 function aisetup()
@@ -171,10 +179,14 @@ function aisetup()
         model = readline()
     end
 
+    stream = request("Stream responses?", RadioMenu(["Yes", "No"]))
+
     @set_preferences!(
         "tidiererrors_llm_schema" => schema,
         "tidiererrors_llm_api_key" => api_key,
-        "tidiererrors_llm_model" => model)
+        "tidiererrors_llm_model" => model,
+        "tidiererrors_llm_stream" => stream == 1 ? "Yes" : "No"
+    )
 
     return nothing
 end
@@ -232,6 +244,10 @@ end
 
 function get_action()
     return @load_preference("tidiererrors_default_action")
+end
+
+function get_stream_pref()
+    return @load_preference("tidiererrors_llm_stream")
 end
 
 end
