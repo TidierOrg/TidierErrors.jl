@@ -30,7 +30,7 @@ It also ships a quick setup helper for configuring your preferred LLM provider a
 ```julia
 pkg> using Pkg; Pkg.add(url="https://github.com/TidierOrg/TidierErrors.jl")
 
-using Tidier, TidierErrors
+julia> TidierErrors
 julia> aisetup()
 Which LLM Provider would you like to use?
    OpenAI
@@ -39,12 +39,53 @@ Enter the name of the Ollama model:
 gpt-oss:20B
  ```
 
-## Example 
-Heres a quick demonstratiion
- ```
-julia> using Tidier, TidierErrors;
+## A Quick Demo 
+```julia
+julia> using TidierErrors
 
-julia; df = DataFrame(id = [string('A' + i ÷ 26, 'A' + i % 26) for i in 0:9], 
+julia> 1 + "a"
+ERROR: MethodError: no method matching +(::Int64, ::String)
+The function `+` exists, but no method is defined for this combination of argument types.
+
+Closest candidates are:
+  +(::Any, ::Any, ::Any, ::Any...)
+   @ Base operators.jl:596
+  +(::Real, ::Complex{Bool})
+   @ Base complex.jl:322
+  +(::Real, ::Complex)
+   @ Base complex.jl:334
+  ...
+
+Some frames were hidden. Next steps: 
+  - Use `show(err)` to see complete trace
+  - Use `aicopy(err)` to copy error with context to clipboard. 
+  - Use `ai(err)` to send error with context directly to LLM using PromptingTools.jl
+
+julia> ai(err)
+[ Info: Tokens: 958 in 15.7 seconds
+PromptingTools.AIMessage("`+` is an addition operator.  
+In Julia there is no defined `+` that takes an `Int64` on the left and a `String` on the right, so the call
+
+```julia
+1 + "a"
+#```
+
+fails with a `MethodError`.
+
+Pick the operation you actually want:
+
+| What you want | Julia syntax |
+|---------------|--------------|
+| concatenate the two values into a new string | `string(1, "a")`  (*or* `string(1)*"a"` ) |
+| repeat the string “a” once (like `1 * "a"`) | `1 .* "a"` |
+| add the integer to a numeric value that is stored in a string | `1 + parse(Int, "a")`  (**but `parse` will fail unless the string is numeric**) |
+| convert the string to an integer and add | `1 + parse(Int, "5")`  → `6` |
+
+So replace `1 + "a"` with one of the appropriate forms above depending on what you really need.")
+
+julia> using Tidier
+
+julia> df = DataFrame(id = [string('A' + i ÷ 26, 'A' + i % 26) for i in 0:9], 
                                groups = [i % 2 == 0 ? "aa" : "bb" for i in 1:10], 
                                value = repeat(1:5, 2), 
                                percent = 0.1:0.1:1.0);
@@ -74,4 +115,3 @@ df3 = @chain df @mutate(x = value + 3) @filter(x > 5)
 
 That will return all rows where the new column `x` exceeds 5. If you intended to filter on another existing column, replace `x` with its correct name.")
 ```
-
