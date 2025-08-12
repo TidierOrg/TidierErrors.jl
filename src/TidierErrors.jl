@@ -102,8 +102,7 @@ function REPL.repl_display_error(errio::IO, @nospecialize errval)
     if action == "Copy to error with context to clipboard"
         aicopy(errval)
     elseif action == "Send error to LLM"
-        msg = ai(errval)
-        display(msg)
+        ai(errval)
     end
 
     return nothing
@@ -134,7 +133,7 @@ function get_context_for_llm()
 
     request = """
 
-        Please reply with a short solution to the error or ask for clarification if you need more information.
+        Please reply with a short (maximum 20 lines) solution to the error or ask for clarification if you need more information.
         """
 
     return (llm_context, request)
@@ -152,7 +151,7 @@ end
 
 function ai(err)
     llm_context, request = get_context_for_llm()
-    msg = aigenerate(get_schema(), llm_context * string(err) * request; model=get_model())
+    msg = aigenerate(get_schema(), llm_context * string(err) * request; model=get_model(), streamcallback = stdout)
     return msg
 end
 
