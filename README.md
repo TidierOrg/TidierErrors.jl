@@ -42,7 +42,7 @@ gpt-oss:20B
 
 ## Example
 Heres a quick demonstration
- ```
+```julia
 julia> using TidierErrors
 
 julia> sum([])
