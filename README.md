@@ -113,7 +113,7 @@ Stacktrace:
     @ REPL[1]:1</code></pre>
 </details>
 
-## Using `ai(err`) and a local LLM to trouble shoot
+## Using `ai(err)` and a local LLM to trouble shoot
 ```julia
 julia> ai(err)
 [ Info: Tokens: 1983 in 37.6 seconds
